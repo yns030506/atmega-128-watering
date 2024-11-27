@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../../../Desktop/AVR-TEST"
+		},
+		{
+			"name": "platformio-test",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
