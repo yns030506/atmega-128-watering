@@ -4,81 +4,36 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-#define STOP 0
-#define PAUSE 1
-#define RUN 2
 
-volatile unsigned char fnd_digit[10] = {
-    0x3F, 0x06, 0x5B, 0x4F, 0x66,
-    0x6D, 0x7D, 0x07, 0x7F, 0x6F
-};
+float tone[] = {1046.6, 1174.6, 1318.6, 1397.0, 1568.0, 1760.0, 1975.6, 2093.2};
 
-volatile int count = 0;
-volatile int state = STOP;
-
-ISR(TIMER1_COMPA_vect) {
-    if (state == RUN) {
-        count++;
+void custom_delay_us(int us) {
+    for(int i = 0; i < us; i++) {
+        _delay_us(1);
     }
 }
 
-ISR(INT4_vect) {
-    if (state == STOP) {
-        state = RUN;
-    } else if (state == RUN) {
-        state = PAUSE;
-    } else if (state == PAUSE) {
-        state = RUN;
+void buzzer(float hz, int ms) {
+    int us = (int)(500000 / hz);
+    int count = (int)(hz / 2);
+
+    for(int i = 0; i < count; i++) {
+        PORTB |= (1 << PB4);
+        custom_delay_us(us);
+        PORTB &= ~(1 << PB4);
+        custom_delay_us(us);
     }
 }
 
-ISR(INT5_vect) {
-    count = 0;
-    state = STOP;
-}
+int main(void) {
 
-void timer1_init() {
-    // CTC mode, prescaler 64
-    TCCR1B |= (1 << WGM12) | (1 << CS11) | (1 << CS10);
-    OCR1A = 25000;
-    TIMSK |= (1 << OCIE1A);
-}
-
-void switch_init() {
-    EIMSK |= (1 << INT4) | (1 << INT5);
-    EICRB |= (1 << ISC41) | (1 << ISC51);
-}
-
-void fnd_init() {
-    DDRC = 0xFF;
-    DDRG = 0x0F;
-}
-
-void fnd_print(int value, int dot) {
-    unsigned char fnd_value[4] = {
-        fnd_digit[value % 10],
-        fnd_digit[(value / 10) % 10],
-        fnd_digit[(value / 100) % 10],
-        fnd_digit[(value / 1000) % 10]
-    };
-
-    for (int i = 0; i < 4; i++) {
-        PORTC = fnd_value[i] | (i == dot ? 0x80 : 0x00);
-        PORTG = 0x01 << i;
-        _delay_ms(1);
+    /* Buzzer */
+    DDRB |= (1 << PB4);
+    while(1) {
+        for(int i = 0; i < 8; i++) {
+            buzzer(tone[i], 500);
+            _delay_ms(500);
+        }
     }
-}
-
-int main() {
-    timer1_init();
-    switch_init();
-    fnd_init();
-    sei();
-
-    DDRA = 0xFF;
-
-    while (1) {
-        fnd_print(count, 1);
-        PORTA = count / 10000;
-    }
+    /* ****** */
 }
