@@ -1,41 +1,46 @@
 #define F_CPU 16000000UL
-#include <avr/io.h>
 #include <util/delay.h>
+#include <avr/io.h>
 #include <stdio.h>
 
-// LCD 통신 헤더
-#include "uart0.h"
-#include "I2C.h"
-#include "i2c_lcd.h"
+// LCD 헤더 
+#include "i2c_master.h"
+#include "liquid_crystal_i2c.h"
 
 // 토양 습도 센서 헤더
 #include "soil_sensor.h"
 
-
-FILE OUTPUT = FDEV_SETUP_STREAM(UART0_Transmit, NULL, _FDEV_SETUP_WRITE);
-
 int main(void)
-{	
-	// LCD
-	LCDInit();
-	UART0_Init();
-	stdout =&OUTPUT;
-	LCDWriteStringXY(0,0,"hello world");
-	int c=0;
-	char stbuf[30];
+{
+	//LCD init
+    i2c_master_init(100000);
+    LiquidCrystalDevice_t lcd = lq_init(0x27, 20, 4, LCD_5x8DOTS);
+    lq_turnOnBacklight(&lcd);
+    
 
 	// 토양습도센서
-	uint16_t moisture;
+	uint16_t moisture; // 습도 값
+    char moisture_str[16]; // 습도 값을 문자열로 저장하는 버퍼
     ADC_Init();
     UART_Init();
-	
-	
-	
-    while (1) 
+
+    while (1)
     {
-		moisture = ADC_Read(7);
-		sprintf(stbuf,"moisture :%d",moisture);
-		LCDWriteStringXY(1,0,stbuf);
-		_delay_ms(50);
+		// ADC로 토양 습도 값 읽기
+        moisture = ADC_Read(7);
+
+        // 습도 값을 문자열로 변환
+        sprintf(moisture_str, "Moisture: %d", moisture);
+
+        // LCD에 출력
+        lq_clear(&lcd); // 기존 텍스트 지우기
+		
+		lq_print(&lcd, "Hello!");
+		lq_setCursor(&lcd, 1, 0);
+        lq_print(&lcd, moisture_str);
+
+        _delay_ms(1000); // 1초 대기
     }
+
+    return 0;
 }
