@@ -1,12 +1,8 @@
-// #define F_CPU 16000000UL
 #include <avr/io.h>
 #include <avr/iom128.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdlib.h>
-// #include "fnd.h"
-// #include "switch_timer.h"
-// #include "buzzer.h"
 
 void ADC_Init(void) {
     ADMUX = (1<<REFS0);               // AVCC를 기준 전압으로 설정

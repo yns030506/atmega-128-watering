@@ -3,6 +3,7 @@
         "*.dbclient-js": "javascript",
         "interrupt.h": "c",
         "buzzer.h": "c",
-        "soil_sensor.h": "c"
+        "soil_sensor.h": "c",
+        "fnd.h": "c"
     }
 }
