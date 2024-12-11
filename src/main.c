@@ -1,39 +1,41 @@
 #define F_CPU 16000000UL
 #include <avr/io.h>
-#include <avr/iom128.h>
-#include <avr/interrupt.h>
 #include <util/delay.h>
+#include <stdio.h>
+
+// LCD 통신 헤더
+#include "uart0.h"
+#include "I2C.h"
+#include "i2c_lcd.h"
+
+// 토양 습도 센서 헤더
+#include "soil_sensor.h"
 
 
-float tone[] = {1046.6, 1174.6, 1318.6, 1397.0, 1568.0, 1760.0, 1975.6, 2093.2};
+FILE OUTPUT = FDEV_SETUP_STREAM(UART0_Transmit, NULL, _FDEV_SETUP_WRITE);
 
-void custom_delay_us(int us) {
-    for(int i = 0; i < us; i++) {
-        _delay_us(1);
+int main(void)
+{	
+	// LCD
+	LCDInit();
+	UART0_Init();
+	stdout =&OUTPUT;
+	LCDWriteStringXY(0,0,"hello world");
+	int c=0;
+	char stbuf[30];
+
+	// 토양습도센서
+	uint16_t moisture;
+    ADC_Init();
+    UART_Init();
+	
+	
+	
+    while (1) 
+    {
+		moisture = ADC_Read(7);
+		sprintf(stbuf,"moisture :%d",moisture);
+		LCDWriteStringXY(1,0,stbuf);
+		_delay_ms(50);
     }
-}
-
-void buzzer(float hz, int ms) {
-    int us = (int)(500000 / hz);
-    int count = (int)(hz / 2);
-
-    for(int i = 0; i < count; i++) {
-        PORTB |= (1 << PB4);
-        custom_delay_us(us);
-        PORTB &= ~(1 << PB4);
-        custom_delay_us(us);
-    }
-}
-
-int main(void) {
-
-    /* Buzzer */
-    DDRB |= (1 << PB4);
-    while(1) {
-        for(int i = 0; i < 8; i++) {
-            buzzer(tone[i], 500);
-            _delay_ms(500);
-        }
-    }
-    /* ****** */
 }

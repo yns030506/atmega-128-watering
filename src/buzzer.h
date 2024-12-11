@@ -1,4 +1,3 @@
-#define F_CPU 16000000UL
 #include <avr/io.h>
 #include <avr/iom128.h>
 #include <avr/interrupt.h>
@@ -25,12 +24,19 @@ void buzzer(float hz, int ms) {
     }
 }
 
-int main(void) {
+void buzzer_init(){
     DDRB |= (1 << PB4);
-    while(1) {
-        for(int i = 0; i < 8; i++) {
-            buzzer(tone[i], 500);
-            _delay_ms(500);
+}
+
+void play(int playing){
+    playing = 0;
+    
+    for(int i = 0; i < 8; i++) {
+        if(playing){
+            break;
         }
+        buzzer(tone[i], 500);
+        // _delay_ms(500);
     }
 }
+    
