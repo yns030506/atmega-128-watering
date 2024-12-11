@@ -26,20 +26,16 @@ int main(void)
 
     while (1)
     {
-		// ADC로 토양 습도 값 읽기
         moisture = ADC_Read(7);
-
-        // 습도 값을 문자열로 변환
         sprintf(moisture_str, "Moisture: %d", moisture);
 
-        // LCD에 출력
-        lq_clear(&lcd); // 기존 텍스트 지우기
+        lq_clear(&lcd);
 		
 		lq_print(&lcd, "Hello!");
 		lq_setCursor(&lcd, 1, 0);
         lq_print(&lcd, moisture_str);
 
-        _delay_ms(1000); // 1초 대기
+        _delay_ms(1000);
     }
 
     return 0;
