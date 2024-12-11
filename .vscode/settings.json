@@ -1,6 +1,8 @@
 {
     "files.associations": {
+        "*.dbclient-js": "javascript",
         "interrupt.h": "c",
-        "buzzer.h": "c"
+        "buzzer.h": "c",
+        "soil_sensor.h": "c"
     }
 }
