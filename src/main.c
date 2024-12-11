@@ -16,9 +16,6 @@
 // 스위치 헤더 
 #include "switch_timer.h"
 
-// fnd 헤더 
-#include "fnd.h"
-
 // 설정값
 #define THRESHOLD 350  // 수분 임계값
 #define ALARM_DURATION 10 // 알람 울리는 시간 (초)
