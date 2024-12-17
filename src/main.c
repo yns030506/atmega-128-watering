@@ -58,6 +58,9 @@ ISR(INT5_vect) {
     if (delay_timer <= 0) {
         delay_timer = ALARM_DELAY;
     }
+    else{
+        delay_timer += ALARM_DELAY;
+    }
 }
 
 // 타이머 인터럽트 (1초 간격)
