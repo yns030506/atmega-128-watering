@@ -17,8 +17,7 @@
 #include "switch_timer.h"
 
 // 설정값
-#define THRESHOLD 350  // 수분 임계값
-#define ALARM_DURATION 10 // 알람 울리는 시간 (초)
+#define ALARM_DURATION 2 // 알람 울리는 시간 (초)
 #define ALARM_DELAY 600 // 알람 지연 시간 (초)
 
 // 전역 변수
@@ -27,13 +26,15 @@ volatile int alarm_timer = 0;    // 알람 대기 타이머
 volatile int delay_timer = 0;    // 알람 지연 타이머
 uint16_t moisture = 0;           // 현재 수분값
 char display_buffer[16];         // LCD 문자열 버퍼
+int threshold = 310;
+int tone_idx = 0;
 
 // LCD 전역 변수
 LiquidCrystalDevice_t lcd;
 
 void update_lcd(void) {
     lq_clear(&lcd);
-    sprintf(display_buffer, "Moisture: %d", moisture);
+    sprintf(display_buffer, "M: %d, th: %d", moisture, threshold);
     lq_print(&lcd, display_buffer);
 
     if (delay_timer > 0) {
@@ -47,10 +48,12 @@ void update_lcd(void) {
     }
 }
 
-// 알람 중지 (Switch1)
+// 수분 알람 임계값 설정정 (Switch1)
 ISR(INT4_vect) {
-    alert = 0;
-    alarm_timer = 0;
+    threshold = threshold - 5;
+    if(threshold <= 250){
+        threshold = 350;
+    }
 }
 
 // 알람 지연 (Switch2)
@@ -73,7 +76,13 @@ ISR(TIMER1_COMPA_vect) {
     if (delay_timer > 0) {
         --delay_timer; // 알람 지연 시간 감소
     }
+    if(moisture >= threshold && alert && delay_timer <= 0){
+        play(tone_idx);
+        tone_idx = (tone_idx+1)%8;
+    }
 }
+
+
 
 int main(void)
 {
@@ -95,19 +104,18 @@ int main(void)
     timer1_init();
     sei();
 
+
     while (1)
     {
         moisture = ADC_Read(7);
         update_lcd();
-        if (moisture <= THRESHOLD && !alert && delay_timer <= 0) {
+
+        if (moisture >= threshold && !alert && delay_timer <= 0) {
             alert = 1;
             alarm_timer = ALARM_DURATION;
-
-            // 알람 시작
-            while (alarm_timer > 0 && alert) {
-                play(0); // Buzzer 울리기
-                _delay_ms(1000);
-            }
+        }
+        if(moisture < threshold){
+            alert = 0;
         }
 
         _delay_ms(1000);
